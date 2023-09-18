@@ -8,7 +8,7 @@ let users = [];
 const isValid = (username)=>{ //returns boolean
 //write code to check is the username is valid
    const user = users.filter((user) => user.username == username)
-   if (!user) return false;
+   if (user.length == 0) return false;
    return true; 
 }
 
@@ -23,8 +23,9 @@ const authenticatedUser = (username,password)=>{ //returns boolean
 //only registered users can login
 regd_users.post("/login", (req,res) => {
   //Write your code here
-  const user = req.body.user;
+  const user = req.body.username;
   const pswd = req.body.password;
+  
   if (!user) {
     return res.status(300).json({message: "Body empty"});
   }
@@ -33,7 +34,7 @@ regd_users.post("/login", (req,res) => {
     return res.status(300).json({message: "Incorrect username or password"});
   }
 
-    const obj = {"user": user, "password": pswd};
+    const obj = {"username": user, "password": pswd};
     let access_token = jwt.sign({
         data: obj
     }, 'access', { expiresIn: 60 * 60 });
@@ -42,7 +43,9 @@ regd_users.post("/login", (req,res) => {
         access_token
     };
 
-    return res.status(200).send("User successfully logged in");
+    console.log(access_token)
+
+    return res.status(200).send("Customer successfully logged in");
 });
 
 // Add a book review
