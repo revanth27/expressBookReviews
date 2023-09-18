@@ -1,9 +1,14 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-let books = require("./booksdb.js");
+let books = require("./booksdb.js").books;
+let updateBooks = require("./booksdb.js").updateBooks;
 const regd_users = express.Router();
 
 let users = [];
+
+function addUser(user) {
+    users.push(user);
+}
 
 const isValid = (username)=>{ //returns boolean
 //write code to check is the username is valid
@@ -16,7 +21,7 @@ const authenticatedUser = (username,password)=>{ //returns boolean
 //write code to check if username and password match the one we have in records.
     if (!isValid(username)) return false;
     const user = users.filter((user) => user.username == username);
-    if (password == user.password) return true;
+    if (password == user[0].password) return true;
     return false;
 }
 
@@ -26,6 +31,8 @@ regd_users.post("/login", (req,res) => {
   const user = req.body.username;
   const pswd = req.body.password;
   
+  console.log("Users: ", users);
+
   if (!user) {
     return res.status(300).json({message: "Body empty"});
   }
@@ -51,9 +58,28 @@ regd_users.post("/login", (req,res) => {
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  const isbn = req.params.isbn;
+  const review = req.query.review;
+  const username = req.user.username;
+  
+  books[isbn]['reviews'][username] = review;
+  
+  updateBooks(books);
+  return res.status(200).json({message: "The review for the book with ISBN " + isbn + " has been added/updated"});
 });
+
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+    //Write your code here
+    const isbn = req.params.isbn;
+    const username = req.user.username;
+    
+    delete books[isbn]['reviews'][username];
+    
+    updateBooks(books);
+    return res.status(200).json({message: "Review for the book with ISBN " + isbn + " has been deleted"});
+  });
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
 module.exports.users = users;
+module.exports.addUser = addUser;
